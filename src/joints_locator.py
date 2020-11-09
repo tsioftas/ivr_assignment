@@ -66,7 +66,7 @@ class joints_locator:
 def main(args):
   jl = joints_locator()
   img = cv2.imread('image_copy.png', cv2.IMREAD_COLOR)
-  print(jl.get_joints_location(img))
+  print(jl.get_joints_pixel_location(img))
 
 if __name__ == '__main__':
     main(sys.argv)
