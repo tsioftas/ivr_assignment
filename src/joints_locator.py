@@ -59,7 +59,7 @@ class joints_locator:
         real_x = loc2[:, 0]
         real_y = loc1[:, 0]
         real_z = (loc1[:, 1] + loc2[:, 1])/2
-        return np.array([real_x, real_y, real_z])
+        return np.array([real_x, real_y, real_z]).transpose()
 
 # test the class
 def main():
