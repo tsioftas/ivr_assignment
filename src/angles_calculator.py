@@ -64,15 +64,15 @@ class angles_calculator:
     def calculate_angles(self):
         joints_xyz = self.jl.get_joints_xyz_locations(self.image1, self.image2)
         # position vectors of each joint:
-        yellow = joints_xyz[0,:]
-        blue = joints_xyz[1,:]
-        green = joints_xyz[2,:]
-        red = joints_xyz[3,:]
+        yellow = joints_xyz[0, :]
+        blue = joints_xyz[1, :]
+        green = joints_xyz[2, :]
+        red = joints_xyz[3, :]
 
         # Get vector of link3 (pointing blue->green)
         link3 = green - blue
         # TODO: complete this
-        pass
+
 
 
 
