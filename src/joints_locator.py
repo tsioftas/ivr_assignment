@@ -39,7 +39,7 @@ class joints_locator:
     blob = blob & bin2[:,:,0]
     return self.ce.get_blob_coordinates(blob)
 
-  def get_joints_location(self, img):
+  def get_joints_pixel_location(self, img):
     y = self.get_yellow_joint(img)
     b = self.get_blue_joint(img)
     g = self.get_green_joint(img)
@@ -50,6 +50,17 @@ class joints_locator:
     # Flip y axis (make up positive)
     ret[:,1] *= -1
     return ret
+
+  # Calculates (relative) xyz coordinates of joints, with a frame of reference as shown in figure 1 of the specifications document.
+  # img_yz: image from camera1
+  # img_xz: image from camera2
+  def get_joints_xyz_locations(self, img_yz, img_xz):
+    loc1 = self.get_joints_pixel_location(img_yz)
+    loc2 = self.get_joints_pixel_location(img_xz)
+    real_x = loc2[:,0]
+    real_y = loc1[:,0]
+    real_z = (loc1[:,1] + loc2[:,1])/2
+    return np.array([real_x, real_y, real_z])
 
 # test the class
 def main(args):
