@@ -10,19 +10,21 @@ class coordinates_extractor:
   def __init__(self):
     pass
 
-  # Returns the pixel coordinates of the center of a colored region in an image
+  # Returns a binary image of a colored region in an image using thresholding
   # color_thresholds has shape (2,3)
   # color_thresholds[0,i] = min value for color i
   # color_thresholds[1,i] = max value for color i
-  def get_coordinates(self, img, color_thresholds):
+  def get_blob_threshold(self, img, color_thresholds):
     assert color_thresholds.shape == (2,3)
-    # Isolate the desired color as a binary image
-    mask = cv2.inRange(img, color_thresholds[0,:], color_thresholds[1,:])
+    return cv2.inRange(img, color_thresholds[0,:], color_thresholds[1,:])
+
+  # Given a binary image of a blob calculates its centre in pixel coordinates
+  def get_blob_coordinates(self, blob):
     # Apply dilate to make the region larger
     kernel = np.ones((5,5), np.uint8)
-    mask = cv2.dilate(mask, kernel, iterations=3)
+    blob = cv2.dilate(blob, kernel, iterations=3)
     # Use moments to calculate centre of the blob
-    M = cv2.moments(mask)
+    M = cv2.moments(blob)
     cx = int(M['m10'] / M['m00'])
     cy = int(M['m01'] / M['m00'])
     return np.array([cx, cy])
