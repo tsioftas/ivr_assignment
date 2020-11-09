@@ -44,7 +44,12 @@ class joints_locator:
     b = self.get_blue_joint(img)
     g = self.get_green_joint(img)
     r = self.get_red_joint(img)
-    return np.array([y,b,g,r])
+    # Origin at the yellow joint
+    ret = np.array([y,b,g,r])
+    ret -= y
+    # Flip y axis (make up positive)
+    ret[:,1] *= -1
+    return ret
 
 # test the class
 def main(args):
