@@ -10,6 +10,7 @@ from cv_bridge import CvBridge, CvBridgeError
 
 #local imports
 from joints_locator import joints_locator
+import math_utils as mu
 
 # Contains methods for calculating the robot's joint's angles given the two camera images
 class angles_calculator:
@@ -71,13 +72,27 @@ class angles_calculator:
 
         # Get vector of link3 (pointing blue->green)
         link3 = green - blue
-        # TODO: complete this
 
+        # calculate a1
+        # find projection of link3 onto yz plane
+        n_yz = np.array([1, 0, 0]) # normal to yz plane
+        link3_yz = mu.project_plane(link3, n_yz)
+        a1 = mu.angle_between_vector_and_plane(link3_yz, np.array([0,-1,0])) # angle formed with xz plane, positive direction is towards negative y
 
+        # calculate a2
+        a2 = mu.angle_between_vector_and_plane(link3, n_yz) # angle formed with yz plane, positive direction is towards positive x
 
+        n3 = np.array([0,-1,0]) # normal to the plane of rotation of 4th joint at initial state
+        x_axis = np.array([1,0,0])
+        y_axis = np.array([0,1,0])
+        n3 = mu.rotation_sequence([x_axis, y_axis, n3], [a1, a2])
+        link4 = red - green
+        a3 = mu.angle_between_vector_and_plane(link4, n3)
 
+        ret = np.array([a1, a2, a3])
+        print(ret)
+        
 
-# test the class
 # call the class
 def main(args):
     ac = angles_calculator()
