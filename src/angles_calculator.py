@@ -5,7 +5,7 @@ import rospy
 import cv2
 import numpy as np
 from sensor_msgs.msg import Image
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Float64
 from cv_bridge import CvBridge, CvBridgeError
 
 #local imports
@@ -19,7 +19,9 @@ class angles_calculator:
         # initialize the node named angles_calculator
         rospy.init_node('angles_calculator', anonymous=True)
         # initialize a publisher to publish angles to topic named "joints_angles"
-        self.angles_pub = rospy.Publisher("joints_angles", Float64MultiArray, queue_size=10)
+        self.a1_pub = rospy.Publisher("joint2_angle_estimate", Float64, queue_size=10)
+        self.a2_pub = rospy.Publisher("joint3_angle_estimate", Float64, queue_size=10)
+        self.a3_pub = rospy.Publisher("joint4_angle_estimate", Float64, queue_size=10)
         # initialize a subscriber to recieve images
         self.image_sub1 = rospy.Subscriber("image_topic1", Image, self.callback1)
         self.image_sub2 = rospy.Subscriber("image_topic2", Image, self.callback2)
@@ -72,6 +74,7 @@ class angles_calculator:
 
         # Get vector of link3 (pointing blue->green)
         link3 = green - blue
+        print(link3)
 
         # calculate a1
         # find projection of link3 onto yz plane
@@ -89,8 +92,16 @@ class angles_calculator:
         link4 = red - green
         a3 = mu.angle_between_vector_and_plane(link4, n3)
 
-        ret = np.array([a1, a2, a3])
-        print(ret)
+        joint2 = Float64()
+        joint2.data = a1
+        joint3 = Float64()
+        joint3.data = a2
+        joint4 = Float64()
+        joint4.data = a3
+
+        self.a1_pub.publish(joint2)
+        self.a2_pub.publish(joint3)
+        self.a3_pub.publish(joint4)
         
 
 # call the class

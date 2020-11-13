@@ -52,39 +52,3 @@ def rotation_sequence(axes, angles):
             axes[j] = rotate_vector_around_axis_by_t(axes[j], axes[i], angles[i])
     return axes[-1]
 
-# finds the centre of a circle given three points on its circumference
-def find_circle(p1, p2, p3):
-    x1, y1 = p1
-    x2, y2 = p2
-    x3, y3 = p3
-
-    x12 = x1 - x2
-    x13 = x1 - x3
-
-    y12 = y1 - y2
-    y13 = y1 - y3
-
-    y31 = y3 - y1
-    y21 = y2 - y1
-
-    x31 = x3 - x1
-    x21 = x2 - x1
-
-    # x1^2 - x3^2  
-    sx13 = x1*x1 - x3*x3
-
-    # y1^2 - y3^2  
-    sy13 = y1*y1 - y3*y3
-
-    sx21 = x2*x2 - x1*x1
-    sy21 = y2*y2 - y1*y1
-
-    f = (((sx13) * (x12) + (sy13) *
-          (x12) + (sx21) * (x13) +
-          (sy21) * (x13)) // (2 *
-          ((y31) * (x12) - (y21) * (x13))))
-
-    g = (((sx13) * (y12) + (sy13) * (y12) +
-          (sx21) * (y13) + (sy21) * (y13)) //
-          (2 * ((x31) * (y12) - (x21) * (y13))))
-    return np.array([-g,-f])
