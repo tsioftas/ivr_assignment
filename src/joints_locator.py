@@ -2,6 +2,7 @@
 
 import cv2
 import numpy as np
+import constants
 
 #local imports
 from coordinates_extractor import coordinates_extractor
@@ -145,6 +146,11 @@ class joints_locator:
             ret_coords[i,:] = self.combine_2d_imagecoords_into_xyz(loc1[i,:], loc2[i,:], joints[i])
 
         return ret_coords
+
+    # Wrapper for converting coordinates from get_joints_xyz_locations into meters.
+    def get_joints_xyz_locations_meters(self, img_yz, img_xz):
+        p2m = constants.get_pixels_to_meters_coefficient()
+        return self.get_joints_xyz_locations(img_yz, img_xz) * p2m
 
 # test the class
 def main():
