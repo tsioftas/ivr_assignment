@@ -24,12 +24,12 @@ def move_joints():
     t0 = rospy.get_time()
     t = 0
     # run for 5.3 seconds
-    while t < 10:
+    while t < 5.3:
         t = (np.array([rospy.get_time()]) - t0)
         print(t)
         j2 = (np.pi/2.0) * np.sin(t * np.pi/15)
         j3 = (np.pi/2.0) * np.sin(t * np.pi/18)
-        j4 = (np.pi/2.0) * np.sin(t * np.pi/20)*0
+        j4 = (np.pi/2.0) * np.sin(t * np.pi/20)
 
         joint2 = Float64()
         joint2.data = j2
