@@ -2,10 +2,10 @@
 
 import cv2
 import numpy as np
-import constants
 
 #local imports
 from coordinates_extractor import coordinates_extractor
+import constants
 
 # Uses coordinates_extractor to get positions of joints in an image
 class joints_locator:
@@ -136,7 +136,6 @@ class joints_locator:
     # img_yz: image from camera1
     # img_xz: image from camera2
     def get_joints_xyz_locations(self, img_yz, img_xz):
-        # TODO: obstructed vision??
         loc1 = self.get_joints_pixel_location(img_yz)
         loc2 = self.get_joints_pixel_location(img_xz)
 

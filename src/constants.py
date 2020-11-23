@@ -1,6 +1,9 @@
-import joints_locator
 import cv2 as cv
 import numpy as np
+
+
+# Local imports
+import joints_locator
 
 # Link lengths in meters
 LINK_L = [2.5, 0, 3.5, 3]
