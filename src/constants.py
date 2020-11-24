@@ -11,6 +11,7 @@ LINK_L = [2.5, 0, 3.5, 3]
 # Initial images path
 IMG1_INIT = './src/ivr_assignment/images/image1_init.png'
 IMG2_INIT = './src/ivr_assignment/images/image2_init.png'
+ML_DATA_DIR = './src/ivr_assignment/images/ml_samples/'
 
 # To be calculated during initialization
 PIXELS_TO_METERS_COEFFICIENT = None

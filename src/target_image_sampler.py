@@ -48,7 +48,7 @@ class target_image_sampler:
         self.samples_count = 0
         self.samples_limit = 30000
         # initialize save directory
-        self.save_dir = './src/ivr_assignment/images/ml_samples/'
+        self.save_dir = constants.ML_DATA_DIR
 
 
     def data_updated(self):
