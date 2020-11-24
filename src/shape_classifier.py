@@ -3,12 +3,34 @@ import cv2
 
 class shape_classifier:
 
-    def __init__(self):
-        self.priors = None
-        self.means = None
-        self.covs = None
-        self.inv_covs = None
-        self.eigenvectors = None
+    def __init__(self, train=False, dpath='./src/ivr_assignment/mgc_model.npz'):
+        self.save_path = dpath
+        if train:
+            self.priors = None
+            self.means = None
+            self.covs = None
+            self.inv_covs = None
+            self.eigenvectors = None
+            self.data_mean = None
+        else:
+            npzfile = np.load(self.save_path)
+            self.priors = npzfile['arr_0']
+            self.means = npzfile['arr_1']
+            self.covs = npzfile['arr_2']
+            self.inv_covs = npzfile['arr_3']
+            self.eigenvectors = npzfile['arr_4']
+            self.data_mean = npzfile['arr_5']
+
+
+    def save_state(self):
+        np.savez(self.save_path,
+                 self.priors,
+                 self.means,
+                 self.covs,
+                 self.inv_covs,
+                 self.eigenvectors,
+                 self.data_mean)
+
 
     def fit(self, X, Y):
         classes = np.unique(Y)
@@ -30,7 +52,7 @@ class shape_classifier:
 
 
     def predict(self, X):
-        if self.eigenvectors is not None and X.shape[1] != self.covs.shape[0]:
+        if self.eigenvectors is not None and X.shape[1] != self.covs.shape[1]:
             # project data to pca plane if not projected
             X = np.matmul(X, self.eigenvectors.transpose())
         C = self.priors.shape[0]
@@ -52,3 +74,7 @@ class shape_classifier:
         b = self.inv_covs[c,:,:]
         c = (X-m).transpose()
         return -0.5*np.log(np.linalg.det(cov)) + (-0.5)*np.diag((np.matmul(a, np.matmul(b, c))))
+
+    
+    def normalize(self, X):
+        return (X/255.0)-self.data_mean

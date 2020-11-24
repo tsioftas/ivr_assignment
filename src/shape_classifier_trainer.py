@@ -16,8 +16,7 @@ class shape_classifier_trainer:
     def __init__(self):
         #self.data_dir = constants.ML_DATA_DIR
         self.data_dir = './images/ml_samples/'
-        #print(os.listdir(self.data_dir))
-        self.sc = shape_classifier()
+        self.sc = shape_classifier(train=True, dpath='./mgc_model.npz')
         self.X = None
         self.Y = None
 
@@ -40,11 +39,12 @@ class shape_classifier_trainer:
         self.X = XY[:,:-1]
         self.Y = XY[:,-1]
         # normalize
-        # self.X /= 255.0
-        # Xmean = np.mean(self.X, axis=0)
-        # self.X -= Xmean
+        self.X /= 255.0
+        Xmean = np.mean(self.X, axis=0)
+        self.X -= Xmean
+        self.sc.data_mean = Xmean
     
-    
+
     def pca_plot(self):
         pca = PCA()
         pca.fit(self.X)
@@ -105,5 +105,6 @@ if __name__ == "__main__":
     sct.load_data()
     #sct.pca_plot()
     sct.pca_reduction(variance_thresh=0.95)
-    sct.train_model(start=1000)
-    sct.test_model(stop=1000)
+    sct.train_model()
+    sct.test_model()
+    sct.sc.save_state()
