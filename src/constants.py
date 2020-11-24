@@ -19,6 +19,7 @@ def get_link_l(x):
     return LINK_L[x-1]
 
 def get_pixels_to_meters_coefficient():
+    global PIXELS_TO_METERS_COEFFICIENT
     if PIXELS_TO_METERS_COEFFICIENT is None:
         img1 = cv.imread(IMG1_INIT, cv.IMREAD_COLOR)
         img2 = cv.imread(IMG2_INIT, cv.IMREAD_COLOR)
@@ -27,3 +28,6 @@ def get_pixels_to_meters_coefficient():
         r_z = locs[3,2]
         PIXELS_TO_METERS_COEFFICIENT = np.sum(LINK_L) / r_z
     return PIXELS_TO_METERS_COEFFICIENT
+
+def get_meters_to_pixels_coefficient():
+    return 1/get_pixels_to_meters_coefficient()

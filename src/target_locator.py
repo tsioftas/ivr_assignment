@@ -11,24 +11,30 @@ import constants
 class target_locator:
 
     def __init__(self):
-        self.orange_thresholds = np.array([[0, 100, 100], [10, 255, 255]])
+        self.orange_thresholds = np.array([[0, 50, 100], [30, 255, 255]])
         self.ce = coordinates_extractor()
 
         self.sphere_loc = None
         self.box_loc = None
 
-    def get_orange_blobs_centres(self, img):
+    def get_orange_blobs_img(self, img):
         blobs = self.ce.get_blob_threshold(img, self.orange_thresholds)
         # separate yellow from orange
         bin2 = img.copy()
         bin2[img[:, :, 1] == img[:, :, 2]] = 0
         bin2[img[:, :, 1] != img[:, :, 2]] = 255
         blobs = blobs & bin2[:, :, 0]
+        return blobs
+
+    def get_orange_blobs_centres(self, img):
+        blobs = self.get_orange_blobs_img(img)
         contours = cv2.findContours(blobs, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         contours = contours[0] if len(contours) == 2 else contours[1]
         ret = []
         for c in contours:
-            ret.append(self.ce.get_blob_coordinates(c))
+            coords = self.ce.get_blob_coordinates(c)
+            if coords is not None:
+                ret.append(coords)
         return np.array(ret)
 
     def select_sphere(blobs):
