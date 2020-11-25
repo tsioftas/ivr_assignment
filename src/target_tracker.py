@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import roslib
-import sys
 import rospy
 import numpy as np
 from std_msgs.msg import Float64
@@ -12,18 +10,20 @@ from cv_bridge import CvBridge, CvBridgeError
 from target_locator import target_locator
 
 class target_tracker:
+    """Used to track the xyz position of the target using the view from the two cameras
+    and publish its estimated coordinates"""
 
     def __init__(self):
         # initialize the node
-        rospy.init_node('track_target_2.2.py', anonymous=True)
+        rospy.init_node('target_tracker.py', anonymous=True)
         self.rate = rospy.Rate(30) # 30hz
         # initialize subscribers to receive images
         self.image_sub1 = rospy.Subscriber("/camera1/robot/image_raw", Image, self.record_img1)
         self.image_sub2 = rospy.Subscriber("/camera2/robot/image_raw", Image, self.record_img2)
         # initialize publishers to publish estimated coordinates
-        self.targ_x_pub = rospy.Publisher("target_x_estimate",Float64, queue_size=10)
-        self.targ_y_pub = rospy.Publisher("target_y_estimate",Float64, queue_size=10)
-        self.targ_z_pub = rospy.Publisher("target_z_estimate",Float64, queue_size=10)
+        self.targ_x_pub = rospy.Publisher("target_x_estimate", Float64, queue_size=10)
+        self.targ_y_pub = rospy.Publisher("target_y_estimate", Float64, queue_size=10)
+        self.targ_z_pub = rospy.Publisher("target_z_estimate", Float64, queue_size=10)
         # initialize images
         self.img1 = None
         self.img2 = None
@@ -32,13 +32,12 @@ class target_tracker:
         # initialize target locator
         self.tl = target_locator()
 
-    
+    # Callback functions for saving the images
     def record_img1(self, data):
         try:
             self.img1 = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
             print(e)
-
 
     def record_img2(self, data):
         try:
@@ -47,11 +46,14 @@ class target_tracker:
             print(e)
 
 
-    def track(self):
+    # Track the position of the target. Runs for a default of 10.5 seconds.
+    # Parameter delta_t can be used to choose a different time period. Parameter
+    # forever can be set to True to track the target until interrupted.
+    def track(self, forever=False, delta_t=10.5):
         t0 = rospy.get_time()
         t = 0
-        # run for 10.5 seconds
-        while t < 10.5:
+        # run for delta_t seconds
+        while t < delta_t or forever:
             t = (np.array([rospy.get_time()]) - t0)
             print(t)
             if (self.img1 is not None) and (self.img2 is not None):
@@ -71,10 +73,8 @@ class target_tracker:
 
 # run the code if the node is called
 if __name__ == '__main__':
-  try:
-    tt = target_tracker()
-    tt.track()
-  except rospy.ROSInterruptException:
-    pass
-
-
+    try:
+        tt = target_tracker()
+        tt.track(forever=True)
+    except rospy.ROSInterruptException:
+        pass
