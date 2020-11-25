@@ -23,8 +23,8 @@ class angles_calculator:
         self.a2_pub = rospy.Publisher("joint3_angle_estimate", Float64, queue_size=10)
         self.a3_pub = rospy.Publisher("joint4_angle_estimate", Float64, queue_size=10)
         # initialize a subscriber to recieve images
-        self.image_sub1 = rospy.Subscriber("image_topic1", Image, self.callback1)
-        self.image_sub2 = rospy.Subscriber("image_topic2", Image, self.callback2)
+        self.image_sub1 = rospy.Subscriber("/camera1/robot/image_raw", Image, self.callback1)
+        self.image_sub2 = rospy.Subscriber("/camera2/robot/image_raw", Image, self.callback2)
         # initialize the bridge between openCV and ROS
         self.bridge = CvBridge()
         # initialize images

@@ -18,8 +18,8 @@ class target_tracker:
         rospy.init_node('track_target_2.2.py', anonymous=True)
         self.rate = rospy.Rate(30) # 30hz
         # initialize subscribers to receive images
-        self.image_sub1 = rospy.Subscriber("image_topic1", Image, self.record_img1)
-        self.image_sub2 = rospy.Subscriber("image_topic2", Image, self.record_img2)
+        self.image_sub1 = rospy.Subscriber("/camera1/robot/image_raw", Image, self.record_img1)
+        self.image_sub2 = rospy.Subscriber("/camera2/robot/image_raw", Image, self.record_img2)
         # initialize publishers to publish estimated coordinates
         self.targ_x_pub = rospy.Publisher("target_x_estimate",Float64, queue_size=10)
         self.targ_y_pub = rospy.Publisher("target_y_estimate",Float64, queue_size=10)

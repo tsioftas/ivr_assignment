@@ -18,8 +18,8 @@ class target_image_sampler:
         # initialize the node
         rospy.init_node('target_image_sampler', anonymous=True)
         # initialize subscribers to recieve images
-        self.image_sub1 = rospy.Subscriber("image_topic1", Image, self.callback_img1)
-        self.image_sub2 = rospy.Subscriber("image_topic2", Image, self.callback_img2)
+        self.image_sub1 = rospy.Subscriber("/camera1/robot/image_raw", Image, self.callback_img1)
+        self.image_sub2 = rospy.Subscriber("/camera2/robot/image_raw", Image, self.callback_img2)
         # initialize subscribers to receive actual position of target
         self.target_x_sub = rospy.Subscriber("/target/x_position_controller/command", Float64, self.callback_x)
         self.target_y_sub = rospy.Subscriber("/target/y_position_controller/command", Float64, self.callback_y)
