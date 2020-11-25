@@ -1,16 +1,13 @@
 import cv2
 import numpy as np
 
-# local imports
-import math_utils as mu
-
 class coordinates_extractor:
     """Class used to extract object pixel coordinates from images"""
 
     def __init__(self):
         pass
 
-    
+
     def get_blob_threshold(self, img, color_thresholds):
         """Returns a binary image of a colored region in an image using thresholding.
 
@@ -21,10 +18,10 @@ class coordinates_extractor:
         assert color_thresholds.shape == (2, 3)
         return cv2.inRange(img, color_thresholds[0, :], color_thresholds[1, :])
 
-    
+
     def get_blob_coordinates(self, blob):
         """Given a binary image of a blob calculates its centre in pixel coordinates.
-        
+
         Returns None if there are no white pixels in the binary image.
         """
         # Approximate centre of mass using moments
@@ -36,4 +33,3 @@ class coordinates_extractor:
             return None
         c_o_m = np.array([approx_cx, approx_cy])
         return c_o_m
-
