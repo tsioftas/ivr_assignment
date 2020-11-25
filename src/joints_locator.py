@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import cv2
 import numpy as np
 
 #local imports
@@ -9,7 +8,7 @@ import constants
 
 
 class joints_locator:
-    """Contains methods to extract the xyz positions of the joints 
+    """Contains methods to extract the xyz positions of the joints
     when given images from camera1 and camera2"""
 
     def __init__(self):
@@ -51,9 +50,9 @@ class joints_locator:
         for i in range(4):
             if ret[i] is not None:
                 # Origin at the yellow joint
-                ret[i,:] -= y
+                ret[i, :] -= y
                 # Flip y axis (make up positive)
-                ret[i,1] *= -1
+                ret[i, 1] *= -1
         return ret
 
 
@@ -63,10 +62,6 @@ class joints_locator:
     #
     # joint: character 'y', 'b', 'g' or 'r' indicating what joint is being dealt with
     def combine_2d_imagecoords_into_xyz(self, yz_coords, xz_coords, joint):
-        # Get the last seen coordinates for this joint
-        prevx = self.prevx.get(joint)
-        prevy = self.prevy.get(joint)
-        prevz = self.prevz.get(joint)
         # Determine x
         if xz_coords is None or xz_coords[0] is None:
             x = self.prevx[joint]
@@ -80,7 +75,8 @@ class joints_locator:
             y = yz_coords[0]
             self.prevy[joint] = y
         # Determine z
-        if (yz_coords is None or yz_coords[1] is None) and (xz_coords is None or xz_coords[1] is None):
+        if (yz_coords is None or yz_coords[1] is None) and \
+            (xz_coords is None or xz_coords[1] is None):
             z = self.prevz[joint]
         else:
             if yz_coords is None or yz_coords[1] is None:
@@ -90,10 +86,10 @@ class joints_locator:
             else:
                 z = (yz_coords[1] + xz_coords[1]) / 2
             self.prevz[joint] = z
-        return np.array([x,y,z])
+        return np.array([x, y, z])
 
 
-    # Given two camera views alculates xyz pixel coordinates of joints, 
+    # Given two camera views alculates xyz pixel coordinates of joints,
     # with a frame of reference as shown in figure 1 of the specifications document.
     # img_yz: image from camera1
     # img_xz: image from camera2
@@ -102,10 +98,12 @@ class joints_locator:
         loc1 = self.get_joints_pixel_location(img_yz)
         loc2 = self.get_joints_pixel_location(img_xz)
         # Combine to get 3d coordinates
-        ret_coords = np.zeros((4,3))
-        joints = ['y','b','g','r']
-        for i in range(len(joints)):
-            ret_coords[i,:] = self.combine_2d_imagecoords_into_xyz(loc1[i,:], loc2[i,:], joints[i])
+        ret_coords = np.zeros((4, 3))
+        joints = ['y', 'b', 'g', 'r']
+        for i in range(4):
+            ret_coords[i, :] = self.combine_2d_imagecoords_into_xyz(loc1[i, :],
+                                                                    loc2[i, :],
+                                                                    joints[i])
         return ret_coords
 
 
@@ -113,4 +111,3 @@ class joints_locator:
     def get_joints_xyz_locations_meters(self, img_yz, img_xz):
         p2m = constants.get_pixels_to_meters_coefficient()
         return self.get_joints_xyz_locations(img_yz, img_xz) * p2m
-
