@@ -12,11 +12,10 @@ from cv_bridge import CvBridge, CvBridgeError
 from target_locator import target_locator
 import constants
 
-# Contains methods for calculating the robot's joint's angles given the two camera images
 class target_image_sampler:
 
     def __init__(self):
-        # initialize the node named angles_calculator
+        # initialize the node
         rospy.init_node('target_image_sampler', anonymous=True)
         # initialize subscribers to recieve images
         self.image_sub1 = rospy.Subscriber("image_topic1", Image, self.callback_img1)
@@ -46,7 +45,7 @@ class target_image_sampler:
         self.sample_h = 30
         # initialize samples count and limit
         self.samples_count = 0
-        self.samples_limit = 30000
+        self.samples_limit = 10000
         # initialize save directory
         self.save_dir = constants.ML_DATA_DIR
 

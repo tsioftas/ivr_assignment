@@ -36,8 +36,8 @@ class image_converter:
     # Uncomment if you want to save the image
     # cv2.imwrite('./src/ivr_assignment/images/image1.png', self.cv_image1)
 
-    im1=cv2.imshow('window1', self.cv_image1)
-    cv2.waitKey(1)
+    #im1=cv2.imshow('window1', self.cv_image1)
+    #cv2.waitKey(1)
     # Publish the results
     try: 
       self.image_pub1.publish(self.bridge.cv2_to_imgmsg(self.cv_image1, "bgr8"))

@@ -14,13 +14,18 @@ class target_locator:
     def __init__(self):
         self.orange_thresholds = np.array([[0, 50, 100], [30, 255, 255]])
         self.ce = coordinates_extractor()
-        self.sc = shape_classifier(dpath='mgc_model.npz')
+        self.sc = shape_classifier()
         self.sample_w = 30
         self.sample_h = 30
         
         self.target_prevx = None
         self.target_prevy = None
         self.target_prevz = None
+
+        # Position of yellow joint in the images. Used to set the origin at the yellow joint
+        self.offset = np.array([399, 555])
+        # Multiplier used to flip y axis 
+        self.multiplier = np.array([1,-1])
 
 
     def get_orange_blobs_img(self, img):
@@ -68,12 +73,7 @@ class target_locator:
         predictions = self.sc.predict(X)
 
         if predictions[0] != predictions[1]:
-            if predictions[0] == 0:
-                cv2.imshow('blob1', blob1)
-                return 0
-            else:
-                cv2.imshow('blob2', blob2)
-                return 1
+            return int(predictions[0])
         else:
             probabilities = self.sc.p_c_x(X, 0)
             return np.argmax(probabilities)
@@ -83,9 +83,9 @@ class target_locator:
         orange_blobs = self.get_orange_blobs_centres(img)
         if orange_blobs.shape == (2,2):
             sphere = self.select_sphere(orange_blobs, self.get_orange_blobs_img(img))
-            return orange_blobs[sphere, :]
+            return (orange_blobs[sphere, :] - self.offset) * self.multiplier
         elif orange_blobs.shape == (1,2):
-            return orange_blobs[0, :]
+            return (orange_blobs[0, :] - self.offset) * self.multiplier
         else:
             return None
 
@@ -123,7 +123,6 @@ class target_locator:
     # img_yz: image from camera1
     # img_xz: image from camera2
     def get_target_xyz_location(self, img_yz, img_xz):
-        # TODO: obstructed vision??
         loc1 = self.get_target_pixel_location(img_yz)
         loc2 = self.get_target_pixel_location(img_xz)
 

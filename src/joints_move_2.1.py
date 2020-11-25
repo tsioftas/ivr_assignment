@@ -8,14 +8,13 @@ from std_msgs.msg import Float64
 
 
 
-  # Defines publisher and subscriber
 def move_joints():
-    # initialize the node named image_processing
+    # initialize the node
     rospy.init_node('joints_move_2_1', anonymous=True)
     
     rate = rospy.Rate(30) # 30hz
 
-    # initialize a publishers to modify joint angles
+    # initialize publishers to modify joint angles
     joint2_pub = rospy.Publisher("/robot/joint2_position_controller/command",Float64, queue_size=10)
     joint3_pub = rospy.Publisher("/robot/joint3_position_controller/command",Float64, queue_size=10)
     joint4_pub = rospy.Publisher("/robot/joint4_position_controller/command",Float64, queue_size=10)

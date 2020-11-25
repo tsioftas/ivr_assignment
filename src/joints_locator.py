@@ -61,6 +61,7 @@ class joints_locator:
         r = self.get_red_joint(img)
         
         ret = np.array([y, b, g, r])
+        print(ret)
         for i in range(4):
             if ret[i] is not None:
                 # Origin at the yellow joint
