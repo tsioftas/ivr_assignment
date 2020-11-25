@@ -36,7 +36,7 @@ class coordinates_extractor:
         try:
             approx_cx = int(M['m10'] / M['m00'])
             approx_cy = int(M['m01'] / M['m00'])
-        except Exception as e:
+        except Exception as _:
             return None
         c_o_m = np.array([approx_cx, approx_cy])
         return c_o_m
