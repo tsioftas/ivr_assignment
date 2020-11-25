@@ -15,6 +15,10 @@ ML_DATA_DIR = './src/ivr_assignment/images/ml_samples/'
 # To be calculated during initialization
 PIXELS_TO_METERS_COEFFICIENT_ = None
 
+# Stationary joints locations
+YELLOW_PIXEL_LOCATION = np.array([399, 555])
+BLUE_PIXEL_LOCATION = np.array([399, 488])
+
 def get_link_length(x):
     """Returns the length (in meters) of the specified link.
     For example, get_link_l(1) returns 2.5"""
