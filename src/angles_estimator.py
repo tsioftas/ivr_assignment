@@ -13,12 +13,12 @@ from joints_locator import joints_locator
 import math_utils as mu
 
 # Contains methods for calculating the robot's joint's angles given the two camera images
-class angles_calculator:
+class angles_estimator:
 
     def __init__(self):
-        # initialize the node named angles_calculator
-        rospy.init_node('angles_calculator', anonymous=True)
-        # initialize a publisher to publish angles to topic named "joints_angles"
+        # initialize the node
+        rospy.init_node('angles_estimator', anonymous=True)
+        # initialize publishers to publish estimated angles
         self.a1_pub = rospy.Publisher("joint2_angle_estimate", Float64, queue_size=10)
         self.a2_pub = rospy.Publisher("joint3_angle_estimate", Float64, queue_size=10)
         self.a3_pub = rospy.Publisher("joint4_angle_estimate", Float64, queue_size=10)
