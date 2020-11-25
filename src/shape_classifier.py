@@ -52,9 +52,6 @@ class shape_classifier:
 
 
     def predict(self, X):
-        if self.eigenvectors is not None and X.shape[1] != self.covs.shape[1]:
-            # project data to pca plane if not projected
-            X = np.matmul(X, self.eigenvectors.transpose())
         C = self.priors.shape[0]
         N, D = X.shape
         logprobs = np.zeros((C,N))
@@ -75,6 +72,19 @@ class shape_classifier:
         c = (X-m).transpose()
         return -0.5*np.log(np.linalg.det(cov)) + (-0.5)*np.diag((np.matmul(a, np.matmul(b, c))))
 
+
+    def p_c_x(self, X, c):
+        numerator = np.exp(self.log_p_x_c(X, c))*self.priors[c]
+        denominator = 0
+        C = self.priors.shape[0]
+        for c_it in range(C):
+            denominator += np.exp(self.log_p_x_c(X, c_it))*self.priors[c_it]
+        return numerator/denominator
+    
     
     def normalize(self, X):
-        return (X/255.0)-self.data_mean
+        tmp = (X/255.0)-self.data_mean
+        if self.eigenvectors is not None and tmp.shape[1] != self.covs.shape[1]:
+            # project data to pca plane if not projected
+            tmp = np.matmul(tmp, self.eigenvectors.transpose())
+        return tmp
