@@ -12,6 +12,7 @@ from cv_bridge import CvBridge, CvBridgeError
 
 
 class image_converter:
+  """Node to be called when the user wants to see the view from camera 1"""
 
   # Defines publisher and subscriber
   def __init__(self):
