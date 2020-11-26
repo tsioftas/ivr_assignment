@@ -11,6 +11,7 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float64MultiArray, Float64
 from cv_bridge import CvBridge, CvBridgeError
+import joints_locator
 
 
 class image_converter:
@@ -45,49 +46,6 @@ class image_converter:
     self.error_d = np.array([0.0,0.0], dtype='float64') 
 
 
-  # In this method you can focus on detecting the centre of the red circle
-  def detect_red(self,image):
-      # Isolate the blue colour in the image as a binary image
-      mask = cv2.inRange(image, (0, 0, 100), (0, 0, 255))
-      # This applies a dilate that makes the binary region larger (the more iterations the larger it becomes)
-      kernel = np.ones((5, 5), np.uint8)
-      mask = cv2.dilate(mask, kernel, iterations=3)
-      # Obtain the moments of the binary image
-      M = cv2.moments(mask)
-      # Calculate pixel coordinates for the centre of the blob
-      cx = int(M['m10'] / M['m00'])
-      cy = int(M['m01'] / M['m00'])
-      return np.array([cx, cy])
-
-  # Detecting the centre of the green circle
-  def detect_green(self,image):
-      mask = cv2.inRange(image, (0, 100, 0), (0, 255, 0))
-      kernel = np.ones((5, 5), np.uint8)
-      mask = cv2.dilate(mask, kernel, iterations=3)
-      M = cv2.moments(mask)
-      cx = int(M['m10'] / M['m00'])
-      cy = int(M['m01'] / M['m00'])
-      return np.array([cx, cy])
-
-  # Detecting the centre of the blue circle
-  def detect_blue(self,image):
-      mask = cv2.inRange(image, (100, 0, 0), (255, 0, 0))
-      kernel = np.ones((5, 5), np.uint8)
-      mask = cv2.dilate(mask, kernel, iterations=3)
-      M = cv2.moments(mask)
-      cx = int(M['m10'] / M['m00'])
-      cy = int(M['m01'] / M['m00'])
-      return np.array([cx, cy])
-
-  # Detecting the centre of the yellow circle
-  def detect_yellow(self,image):
-      mask = cv2.inRange(image, (0, 100, 100), (0, 255, 255))
-      kernel = np.ones((5, 5), np.uint8)
-      mask = cv2.dilate(mask, kernel, iterations=3)
-      M = cv2.moments(mask)
-      cx = int(M['m10'] / M['m00'])
-      cy = int(M['m01'] / M['m00'])
-      return np.array([cx, cy])
 
   # Calculate the conversion from pixel to meter
   def pixel2meter(self,image):
@@ -122,9 +80,10 @@ class image_converter:
   def trajectory(self):
     # get current time
     cur_time = np.array([rospy.get_time() - self.time_trajectory])
-    x_d = float(6 * np.cos(cur_time*np.pi/100))
-    y_d = float(6 + np.absolute(1.5*np.sin(cur_time * np.pi/100)))
-    return np.array([x_d, y_d])
+    x_d = float(2.5* np.cos(cur_time * np.pi/15))
+    y_d = float(2.5* np.sin(cur_time * np.pi/15))
+    z_d = float(1* np.sin(cur_time * np.pi/15))
+    return np.array([x_d, y_d, z_d])
 
   # detect robot end−effector from the image def detect end effector(self ,image):
   def detect_end_effector(self,image):
@@ -133,41 +92,45 @@ class image_converter:
     return endPos
 
   # Calculate the forward kinematics from image
-  def forward_kinematics_image(self,image):
-    joints = self.detect_joint_angles(image)
-    end_effector = np.array([2.5*np.sin(joints[0]) + 3.5*np.sin(joints[0] + joints[1]) + 3*np.sin(joints.sum()), 2.5*np.cos(joints[0]) + 3.5*np.cos(joints[0]+joints[1]) + 3*np.cos(joints.sum()), joints.sum()])
+  # joints_angles is a list of 4 angles for 1 end_effector position
+  def forward_kinematics_image(self,joints_angles):
+    joints = joints_angles
+    q1 = joints[0]
+    q2 = joints[1]
+    q3 = joints[2]
+    q4 = joints[3]
+
+    k1 = 3*np.cos(q1)*(np.sin(q3)**2)+3*np.cos(q3)*np.sin(q1)*np.sin(q3)*np.cos(q2)+3*np.cos(q3)*np.sin(q1)*np.sin(q2)+3.5*np.cos(q1)*np.cos(q3)-3.5*np.sin(q1)*np.sin(q3)*np.cos(q2)+2.5*np.cos(q1)
+    k2 = 3*np.sin(q1)*(np.sin(q3)**2)-3*np.cos(q1)*np.cos(q3)*np.sin(q3)*np.cos(q2)-3*np.cos(q1)*np.cos(q3)*np.sin(q2)+3.5*np.cos(q3)*np.sin(q1)+3.5*np.cos(q1)*np.sin(q2)*np.sin(q3)+2.5*np.sin(q1)
+    k3 = -3*np.cos(q3)*np.sin(q3)*np.sin(q2)+3*np.cos(q3)*np.cos(q2)+3.5*np.sin(q3)*np.sin(q2)
+    end_effector = np.array([k1,k2,k3])
     return end_effector
-
-  # 10 random values for each joint
-  def generate_random_joints(self):
-    joints_list = []
-    for i in range(10):
-        joints2 = []
-        for j in range(4):
-            joints2.append(randrange(-math.pi/2, math.pi/2))
-        joints_list.append(joints2)
-    return joints_list
-
-  # Calculate the forward kinematics from 3 random joints
-  def forward_kinematics_random(self,joints2):
-    joints = joints2
-    end_effector = np.array([2.5*np.sin(joints[0]) + 3.5*np.sin(joints[0] + joints[1]) + 3*np.sin(joints.sum()), 2.5*np.cos(joints[0]) + 3.5*np.cos(joints[0]+joints[1]) + 3*np.cos(joints.sum()), joints.sum()])
-    return end_effector
-
 
   # Calculate the Jacobian of the robot
-  def calculate_jacobian(self,image):
-    joints = self.detect_joint_angles(image) 
-    jacobian = np.array([  
-                          [2.5*np.cos(joints[0]) + 3.5*np.cos(joints[0]+joints[1]) + 3*np.cos(joints.sum()),
-                           3.5*np.cos(joints[0]+joints[1]) + 3*np.cos(joints.sum()),
-                           3*np.cos(joints.sum())
-                          ],
-                          [- 2.5*np.sin(joints[0]) - 3.5*np.sin(joints[0]+joints[1]) - 3*np.sin(joints.sum()),
-                           - 3.5*np.sin(joints[0]+joints[1]) - 3*np.sin(joints.sum()), -3*np.sin(joints.sum())
-                          ]
-                        ]
-                       )
+  # joints_angles is a list of 4 angles for 1 end_effector position
+  def calculate_jacobian(self,joints_angles):
+    joints = joints_angles 
+    q1 = joints[0]
+    q2 = joints[1]
+    q3 = joints[2]
+    q4 = joints[3]
+
+    J11 = -3*np.sin(q1)*(np.sin(q3)**2)+3*np.cos(q1)*np.cos(q3)*np.cos(q2)*np.sin(q3)+3*np.cos(q1)*np.cos(q3)*np.sin(q2)-3.5*np.sin(q1)*np.cos(q3)-3.5*np.cos(q1)*np.sin(q3)*np.cos(q2)-2.5*np.sin(q1)
+    J12 = -3*np.cos(q3)*np.sin(q1)*np.sin(q3)*np.sin(q2)+3*np.cos(q3)*np.sin(q1)*np.cos(q2)+3.5*np.sin(q1)*np.sin(q3)*np.sin(q2)
+    J13 = 6*np.cos(q1)*np.sin(q3)*np.cos(q3)-3*np.cos(q2)*np.sin(q1)*(np.cos(q3)**2)+3*np.cos(q2)*np.sin(q1)*(np.sin(q3)**2)+3*np.sin(q3)*np.cos(q1)+np.sin(q2)-3.5*np.sin(q3)*np.sin(q1)+3.5*np.cos(q3)*np.cos(q1)*np.sin(q2)
+    J14 = 0
+
+    J21 = 3*np.cos(q1)*(np.sin(q3)**2)+3*np.sin(q1)*np.cos(q3)*np.sin(q3)*np.cos(q2)+3*np.sin(q1)*np.cos(q3)*np.sin(q2)+3.5*np.cos(q3)*np.cos(q1)-3.5*np.sin(q1)*np.sin(q2)*np.sin(q3)+2.5*np.cos(q1)
+    J22 = 3*np.cos(q1)*np.cos(q3)*np.sin(q3)*np.sin(q2)-3*np.cos(q1)*np.cos(q3)*np.cos(q2)+3.5*np.cos(q1)*np.cos(q2)*np.sin(q3)
+    J23 = 6*np.sin(q1)*np.sin(q3)*np.cos(q3)+3*np.cos(q1)*np.cos(q2)*(np.sin(q3)**2)-3*np.cos(q1)*np.cos(q2)*(np.cos(q3)**2)+3*np.cos(q1)*np.sin(q3)*np.sin(q2)-3.5*np.sin(q3)*np.sin(q1)+3.5*np.cos(q1)*np.sin(q2)*np.cos(q3)
+    J24 = 0
+
+    J31 = 0
+    J32 = -3*np.cos(q3)*np.sin(q3)*np.cos(q2)-3*np.cos(q3)*np.sin(q2)+3.5*np.sin(q3)*np.cos(q2)
+    J33 = -3*np.sin(q2)*(np.cos(q3)**2)+3*np.sin(q2)*(np.sin(q3)**2)-3*np.sin(q3)*np.cos(q2)+3.5*np.cos(q3)*np.sin(q2)
+    J34 = 0
+
+    jacobian = np.array([[J11,J12,J13,J14],[J21,J22,J23,J24],[J31,J32,J33,J34]])
     return jacobian
 
   # Estimate control inputs for open-loop control
@@ -185,7 +148,6 @@ class image_converter:
     self.error = pos_d
     q_d = q + (dt * np.dot(J_inv, self.error_d.transpose()))  # desired joint angles to follow the trajectory
     return q_d
-
 
   def control_closed(self,image):
     # P gain
