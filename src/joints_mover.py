@@ -52,7 +52,7 @@ class joints_mover:
         publishers = [self.joint1_pub, self.joint2_pub, self.joint3_pub, self.joint4_pub]
         to_publish = Float64()
         to_publish.data = angle
-        publishers[joint].publish(to_publish)
+        publishers[joint-1].publish(to_publish)
 
 
     # Sets all joint angles to zero
