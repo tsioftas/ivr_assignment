@@ -33,9 +33,10 @@ def fk_cheat(q):
         res = np.matmul(res, frame_curr_to_prev(alphas[i], a_s[i], ds[i], thetas[i]))
     return res[0:3, 3]
 
-def calculate_fk_matrix(q):
+def calculate_fk_matrix(qq):
     cs = np.array([np.pi/2, -np.pi/2, 0, 0])
-    q += cs
+    # Add constants
+    q = qq + cs
 
     c1 = np.cos(q[0])
     c2 = np.cos(q[1])
@@ -107,6 +108,25 @@ def  calculate_jacobian_matrix(q):
                          [j20, j21, j22, j23]])
     return jacobian
 
+
+
+def get_green_joint_xyz(qq):
+    cs = np.array([np.pi/2, -np.pi/2, 0, 0])
+    # Add constants
+    q = qq + cs
+    l1 = constants.get_link_length(1)
+    l3 = constants.get_link_length(3)
+    c1 = np.cos(q[0])
+    c2 = np.cos(q[1])
+    c3 = np.cos(q[2])
+    s1 = np.sin(q[0])
+    s2 = np.sin(q[1])
+    s3 = np.sin(q[2])
+    # Calculated from intermediate step in calculating FK matrix
+    x = l3*(c1*c2*c3 - s1*s3)
+    y = l3*(s1*c2*c3 + c1*s3)
+    z = l3*(s2*c3) + l1
+    return np.array([x, y, z])
 
 
 def get_end_effector_xyz(q):
