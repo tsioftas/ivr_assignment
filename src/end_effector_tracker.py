@@ -2,7 +2,7 @@
 
 import rospy
 import numpy as np
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
@@ -19,6 +19,8 @@ class end_effector_tracker:
         # initialize subscribers to receive images
         self.image_sub1 = rospy.Subscriber("/camera1/robot/image_raw", Image, self.record_img1)
         self.image_sub2 = rospy.Subscriber("/camera2/robot/image_raw", Image, self.record_img2)
+        # initialize publishers to publish the estimate
+        self.ee_pos_pub = rospy.Publisher("/end_effector_position_estimate", Float64MultiArray, queue_size=10)
         # initialize images
         self.img1 = None
         self.img2 = None
@@ -39,27 +41,25 @@ class end_effector_tracker:
             self.img2 = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
             print(e)
+        self.track()
 
 
     # Track the position of the target. Runs for a default of 10.5 seconds.
     # Parameter delta_t can be used to choose a different time period. Parameter
     # forever can be set to True to track the target until interrupted.
     def track(self, forever=False, delta_t=10.5):
-        t0 = rospy.get_time()
-        t = 0
-        # run for delta_t seconds
-        while t < delta_t or forever:
-            t = (np.array([rospy.get_time()]) - t0)
-            if (self.img1 is not None) and (self.img2 is not None):
-                coords = self.jl.get_joints_xyz_locations_meters(self.img1, self.img2)[-1,:]
-                print(coords)
-            self.rate.sleep()
+        if (self.img1 is not None) and (self.img2 is not None):
+            coords = self.jl.get_joints_xyz_locations_meters(self.img1, self.img2)[-1,:]
+            pub = Float64MultiArray()
+            pub.data = [coords[0], coords[1], coords[2]]
+            print(coords)
+            self.ee_pos_pub.publish(pub)
 
 
 # run the code if the node is called
 if __name__ == '__main__':
     try:
         eet = end_effector_tracker()
-        eet.track(forever=True)
+        rospy.spin()
     except rospy.ROSInterruptException:
         pass
