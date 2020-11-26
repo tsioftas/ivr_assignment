@@ -41,18 +41,18 @@ class joints_locator:
     # of joints in that image, centered at the yellow joint and with the y-axis pointing up
     def get_joints_pixel_location(self, img):
         # Yellow and blue joints are stationary
-        y = constants.YELLOW_PIXEL_LOCATION
-        b = constants.BLUE_PIXEL_LOCATION
+        y = constants.YELLOW_PIXEL_LOCATION.copy()
+        b = constants.BLUE_PIXEL_LOCATION.copy()
         # Green and red could be anywhere
         g = self.get_green_joint(img)
         r = self.get_red_joint(img)
-        ret = np.array([y, b, g, r])
+        ret = [y.copy(), b, g, r]
         for i in range(4):
             if ret[i] is not None:
                 # Origin at the yellow joint
-                ret[i, :] -= y
+                ret[i] -= y
                 # Flip y axis (make up positive)
-                ret[i, 1] *= -1
+                ret[i][1] *= -1
         return ret
 
 
@@ -101,8 +101,8 @@ class joints_locator:
         ret_coords = np.zeros((4, 3))
         joints = ['y', 'b', 'g', 'r']
         for i in range(4):
-            ret_coords[i, :] = self.combine_2d_imagecoords_into_xyz(loc1[i, :],
-                                                                    loc2[i, :],
+            ret_coords[i, :] = self.combine_2d_imagecoords_into_xyz(loc1[i],
+                                                                    loc2[i],
                                                                     joints[i])
         return ret_coords
 
