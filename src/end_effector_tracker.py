@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
-import numpy as np
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Float64MultiArray, Float64
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
@@ -21,6 +20,10 @@ class end_effector_tracker:
         self.image_sub2 = rospy.Subscriber("/camera2/robot/image_raw", Image, self.record_img2)
         # initialize publishers to publish the estimate
         self.ee_pos_pub = rospy.Publisher("/end_effector_position_estimate", Float64MultiArray, queue_size=10)
+        # publsh separately
+        self.ee_pos_pub_x = rospy.Publisher("/end_effector_position_estimate_x", Float64, queue_size=10)
+        self.ee_pos_pub_y = rospy.Publisher("/end_effector_position_estimate_y", Float64, queue_size=10)
+        self.ee_pos_pub_z = rospy.Publisher("/end_effector_position_estimate_z", Float64, queue_size=10)
         # initialize images
         self.img1 = None
         self.img2 = None
@@ -54,6 +57,9 @@ class end_effector_tracker:
             pub.data = [coords[0], coords[1], coords[2]]
             print(coords)
             self.ee_pos_pub.publish(pub)
+            self.ee_pos_pub_x.publish(coords[0])
+            self.ee_pos_pub_y.publish(coords[1])
+            self.ee_pos_pub_z.publish(coords[2])
 
 
 # run the code if the node is called
