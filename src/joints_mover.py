@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import rospy
 import numpy as np
 from std_msgs.msg import Float64
@@ -57,8 +58,11 @@ class joints_mover:
 
     # Sets all joint angles to zero
     def reset_joints(self):
-        for i in range(1, 5):
-            self.set_joint_angle(i, 0)
+        for i in range(10):
+            for i in range(1, 5):
+                self.set_joint_angle(i, 0)
+            self.rate.sleep()
+        
 
 
 
@@ -66,7 +70,14 @@ class joints_mover:
 # run the code if the node is called
 if __name__ == '__main__':
     try:
+        choice = sys.argv[1]
         jm = joints_mover()
-        jm.move_joints_2_1()
+        if choice == '2.1':
+            jm.move_joints_2_1()
+            jm.reset_joints()
+        elif choice == 'reset':
+            jm.reset_joints()
+        else:
+            raise Exception('Invalid argument \"{}\"'.format(choice))
     except rospy.ROSInterruptException:
         pass
