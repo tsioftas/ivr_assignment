@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import numpy as np
 from std_msgs.msg import Float64
 import rospy
@@ -186,7 +187,9 @@ def run_test(i):
 
 if __name__ == "__main__":
     try:
-        run_test(9)
+        choice = int(sys.argv[1])
+        if 0 <= choice and choice  <= 9:
+            run_test(choice)
     except rospy.ROSInterruptException:
         pass
 
