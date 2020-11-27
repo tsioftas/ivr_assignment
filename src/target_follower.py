@@ -187,7 +187,6 @@ class target_follower:
             j = fk.calculate_jacobian_matrix(q)
             j_inv = np.linalg.pinv(j)
             q0_d = self.q0_dot(q)
-            print("q0.=", q0_d)
             dq_d = np.matmul(j_inv, (np.matmul(K_d, error_dot.transpose()) + np.matmul(K_p, newerror.transpose())))
             dq_d += np.matmul((np.eye(4) - np.matmul(j_inv, j)), q0_d)
 
