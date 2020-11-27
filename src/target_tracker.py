@@ -20,6 +20,9 @@ class target_tracker:
         self.targ_x_pub = rospy.Publisher("target_x_estimate", Float64, queue_size=10)
         self.targ_y_pub = rospy.Publisher("target_y_estimate", Float64, queue_size=10)
         self.targ_z_pub = rospy.Publisher("target_z_estimate", Float64, queue_size=10)
+        self.obs_x_pub = rospy.Publisher("obstacle_x_estimate", Float64, queue_size=10)
+        self.obs_y_pub = rospy.Publisher("obstacle_y_estimate", Float64, queue_size=10)
+        self.obs_z_pub = rospy.Publisher("obstacle_z_estimate", Float64, queue_size=10)
         # initialize images
         self.img1 = None
         self.img2 = None
@@ -52,17 +55,26 @@ class target_tracker:
     # Track the position of the target.
     def track(self):
         if (self.img1 is not None) and (self.img2 is not None):
-            coords = self.tl.get_target_xyz_location_meters(self.img1, self.img2)
-            print(coords)
+            coords_both = self.tl.get_target_xyz_location_meters(self.img1, self.img2, both=True)
+            print(coords_both)
             x = Float64()
-            x.data = coords[0]
+            x.data = coords_both[0, 0]
             y = Float64()
-            y.data = coords[1]
+            y.data = coords_both[0, 1]
             z = Float64()
-            z.data = coords[2]
+            z.data = coords_both[0, 2]
             self.targ_x_pub.publish(x)
             self.targ_y_pub.publish(y)
             self.targ_z_pub.publish(z)
+            x = Float64()
+            x.data = coords_both[1, 0]
+            y = Float64()
+            y.data = coords_both[1, 1]
+            z = Float64()
+            z.data = coords_both[1, 2]
+            self.obs_x_pub.publish(x)
+            self.obs_y_pub.publish(y)
+            self.obs_z_pub.publish(z)
         self.is_tracking = False
 
 

@@ -23,9 +23,9 @@ class target_locator:
         self.sample_w = 30
         self.sample_h = 30
         # Initialise last seen xyz coordinates of target
-        self.target_prevx = None
-        self.target_prevy = None
-        self.target_prevz = None
+        self.prevx = [None, None] # [target, cuboid]
+        self.prevy = [None, None]
+        self.prevz = [None, None]
         # Position of yellow joint in the images. Used to set the origin at the yellow joint
         self.offset = constants.YELLOW_PIXEL_LOCATION
         # Multiplier used to flip y axis
@@ -96,46 +96,55 @@ class target_locator:
 
     # Given an image returns the pixel coordinates of the orange sphere, centered at
     # the yellow joint, oriented as the axes in figure1 of the specifications document indicate.
-    def get_target_pixel_location(self, img):
+    def get_target_pixel_location(self, img, both=False):
         orange_blobs = self.get_orange_blobs_centres(img)
         if orange_blobs.shape == (2, 2):
             # Two blobs, use shape_classifier to determine which one is the shpere
             sphere = self.select_sphere(orange_blobs, self.get_orange_blobs_img(img))
-            return (orange_blobs[sphere, :] - self.offset) * self.multiplier
+            if not both:
+                return (orange_blobs[sphere, :] - self.offset) * self.multiplier
+            else:
+                return [(orange_blobs[sphere, :] - self.offset) * self.multiplier, (orange_blobs[1-sphere, :] - self.offset) * self.multiplier]
         elif orange_blobs.shape == (1, 2):
             # One blob, probably the objects are overlapping. Assume they have the same coordinates
-            return (orange_blobs[0, :] - self.offset) * self.multiplier
+            if not both:
+                return (orange_blobs[0, :] - self.offset) * self.multiplier
+            else:
+                return [(orange_blobs[0, :] - self.offset) * self.multiplier, (orange_blobs[0, :] - self.offset) * self.multiplier]
         else:
-            return None
+            if not both:
+                return None
+            else:
+                return [None, None]
 
 
     # Given the pixel coordinates of the target in the two camera views,
     # returns its xyz pixel coordinates. If one of the coordinates is not
     # available, the last seen value for that coordinate is used.
-    def combine_2d_imagecoords_into_xyz(self, yz_coords, xz_coords):
+    def combine_2d_imagecoords_into_xyz(self, yz_coords, xz_coords, which=0):
         # determine x
         if xz_coords is None or xz_coords[0] is None:
-            x = self.target_prevx
+            x = self.prevx[which]
         else:
             x = xz_coords[0]
-            self.target_prevx = x
+            self.prevx[which] = x
         # determine y
         if yz_coords is None or yz_coords[0] is None:
-            y = self.target_prevy
+            y = self.prevy[which]
         else:
             y = yz_coords[0]
-            self.target_prevy = y
+            self.prevy[which] = y
         # determine z
         if (yz_coords is None or yz_coords[1] is None) and \
             (xz_coords is None or xz_coords[1] is None):
-            z = self.target_prevz
+            z = self.prevz[which]
         elif yz_coords is None or yz_coords[1] is None:
             z = xz_coords[1]
         elif xz_coords is None or xz_coords[1] is None:
             z = yz_coords[1]
         else:
             z = (yz_coords[1] + xz_coords[1])/2
-        self.target_prevz = z
+        self.prevz[which] = z
 
         return np.array([x, y, z])
 
@@ -145,15 +154,21 @@ class target_locator:
     # in figure 1 of the specifications document.
     # img_yz: image from camera1
     # img_xz: image from camera2
-    def get_target_xyz_location(self, img_yz, img_xz):
-        loc1 = self.get_target_pixel_location(img_yz)
-        loc2 = self.get_target_pixel_location(img_xz)
+    def get_target_xyz_location(self, img_yz, img_xz, both=False):
+        loc1 = self.get_target_pixel_location(img_yz, both=both)
+        loc2 = self.get_target_pixel_location(img_xz, both=both)
 
-        ret_coords = self.combine_2d_imagecoords_into_xyz(loc1, loc2)
+        if not both:
+            ret_coords = self.combine_2d_imagecoords_into_xyz(loc1, loc2)
+        else:
+            ret_coords = np.zeros((2,3))
+            ret_coords[0,:] = (self.combine_2d_imagecoords_into_xyz(loc1[0], loc2[0], 0))
+            ret_coords[1,:] = (self.combine_2d_imagecoords_into_xyz(loc1[1], loc1[1], 1))
 
         return ret_coords
 
     # Wrapper for converting coordinates from get_target_xyz_location into meters.
-    def get_target_xyz_location_meters(self, img_yz, img_xz):
+    def get_target_xyz_location_meters(self, img_yz, img_xz, both=False):
         p2m = constants.get_pixels_to_meters_coefficient()
-        return self.get_target_xyz_location(img_yz, img_xz) * p2m
+        return self.get_target_xyz_location(img_yz, img_xz, both=both) * p2m
+    
